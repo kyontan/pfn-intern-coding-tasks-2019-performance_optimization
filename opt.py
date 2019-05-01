@@ -66,13 +66,17 @@ def main():
     m = N // n
     for i in range(n):
         for j in range(m):
+            yexp = 'y_{}_{}'.format(step, i*m+j)
             for k in range(m):
-                xf = 'x[{}] * f({}, {})'.format(swap_xi_from[i*m+k], ((j*k)%m)*(n), N)
+                xexp = 'x[{}]'.format(swap_xi_from[i*m+k])
+
                 if k == 0:
-                    print('y_{}_{} = {}'.format(step, i*m+j, xf))
+                    print('{} = {}'.format(yexp, xexp))
+                elif (((j*k)%m)*n / N) == 0.5:
+                    print('{} = {} - {}'.format(yexp, yexp, xexp))
                 else:
-                    print('t = {}'.format(xf))
-                    print('y_{}_{} = y_{}_{} + t'.format(step, i*m+j, step, i*m+j))
+                    print('t = {} * f({}, {})'.format(xexp, ((j*k)%m)*(n), N))
+                    print('{} = {} + t'.format(yexp, yexp))
 
     # for i in range(N):
     #     print("x_{} = y[{}]".format(i, i))
@@ -89,9 +93,17 @@ def main():
         for i in range(q):
             for j in range(f):
                 for k in range(m):
+                    yexp = 'y_{}_{}'.format(step, i*f*m+(j*m+k))
                     for l in range(f):
-                        print('t = y_{}_{} * f({}, {})'.format(step-1, i*f*m + (l*m+k), (l*(j*m+k)%r)*q, N))
-                        print('y_{}_{} = y_{}_{} + t'.format(step, i*f*m+(j*m+k), step, i*f*m+(j*m+k)))
+                        lastyexp = 'y_{}_{}'.format(step-1, i*f*m + l*m+k)
+
+                        if l == 0:
+                            print('{} = {}'.format(yexp, lastyexp))
+                        elif ((l*(j*m+k)%r)*q / N) == 0.5:
+                            print('{} = {} - {}'.format(yexp, yexp, lastyexp))
+                        else:
+                            print('t = {} * f({}, {})'.format(lastyexp, (l*(j*m+k)%r)*q, N))
+                            print('{} = {} + t'.format(yexp, yexp))
 
         # print(m, q, r)
         n = q
