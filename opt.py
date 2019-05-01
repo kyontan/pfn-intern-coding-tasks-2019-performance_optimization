@@ -57,20 +57,16 @@ def main():
                 for k in range(q):
                     swap_xi_temp[i*m + q*j + k] = swap_xi_from[i*m + f*k + j]
 
-        for i in range(N):
-            swap_xi_from = swap_xi_temp
+        swap_xi_from = swap_xi_temp
 
         prod_factor *= f
 
-    # for i in range(N):
-    #     print("y[{}] = (0)".format(i))
-
     step = 0
 
-    # DFT N // factors[-1] sub-arrays
-    n = N // factors[-1]
-    m = N // n
+    m = factors[-1]
+    n = N // m
     for i in range(n):
+        # DFT n sub-arrays
         for j in range(m):
             yexp = 'y_{}_{}'.format(step, i*m+j)
             for k in range(m):
@@ -78,16 +74,15 @@ def main():
 
                 if k == 0:
                     print('{} = {}'.format(yexp, xexp))
-                elif (((j*k)%m)*n / N) == 0.5:
+                elif ((j*k) % m) == 0:
+                    print('{} = {} + {}'.format(yexp, yexp, xexp))
+                elif ((j*k) % m) / m == 0.5:
                     print('{} = {} - {}'.format(yexp, yexp, xexp))
                 else:
-                    print('t = {} * f({}, {})'.format(xexp, ((j*k)%m)*(n), N))
+                    print('t = {} * f({}, {})'.format(xexp, j*k, m))
                     print('{} = {} + t'.format(yexp, yexp))
 
-    # for i in range(N):
-    #     print("x_{} = y[{}]".format(i, i))
-
-    n = prod_factor
+    n = N // factors[-1]
     for f in reversed(factors[:-1]):
         step += 1
         m = N // n
