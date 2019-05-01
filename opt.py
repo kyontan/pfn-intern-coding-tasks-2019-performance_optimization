@@ -63,8 +63,8 @@ def main():
 
     step = 0
 
-    m = factors[-1]
-    n = N // m
+    n = N // factors[-1]
+    m = N // n
     for i in range(n):
         # DFT n sub-arrays
         for j in range(m):
@@ -72,42 +72,44 @@ def main():
             for k in range(m):
                 xexp = 'x[{}]'.format(swap_xi_from[i*m+k])
 
+                t = j * k
+
                 if k == 0:
                     print('{} = {}'.format(yexp, xexp))
-                elif ((j*k) % m) == 0:
+                elif t % m == 0: # e^(2*t*i*pi) where t = 0, 1. ...
                     print('{} = {} + {}'.format(yexp, yexp, xexp))
-                elif ((j*k) % m) / m == 0.5:
+                elif (2 * t) % m == 0: # e^(2*t*i*pi) where t = 0.5, 1.5. ...
                     print('{} = {} - {}'.format(yexp, yexp, xexp))
                 else:
-                    print('t = {} * f({}, {})'.format(xexp, j*k, m))
+                    print('t = {} * f({}, {})'.format(xexp, t, m))
                     print('{} = {} + t'.format(yexp, yexp))
 
     n = N // factors[-1]
     for f in reversed(factors[:-1]):
         step += 1
         m = N // n
-        q = n // f
-        r = N // q
-        for i in range(N):
-            print("y_{}_{} = (0)".format(step, i))
+        n = n // f
+        q = N // n
 
-        for i in range(q):
+        for i in range(n):
             for j in range(f):
                 for k in range(m):
-                    yexp = 'y_{}_{}'.format(step, i*f*m+(j*m+k))
+                    yexp = 'y_{}_{}'.format(step, i*f*m + j*m+k)
                     for l in range(f):
                         lastyexp = 'y_{}_{}'.format(step-1, i*f*m + l*m+k)
 
+                        t = l*(j*m+k)
+
                         if l == 0:
                             print('{} = {}'.format(yexp, lastyexp))
-                        elif ((l*(j*m+k)%r)*q / N) == 0.5:
+                        elif t % q == 0: # e^(2*t*i*pi) where t = 0, 1. ...
+                            print('{} = {} + {}'.format(yexp, yexp, lastyexp))
+                        elif (2 * t) % q == 0: # e^(2*t*i*pi) where t = 0.5, 1.5, ...
                             print('{} = {} - {}'.format(yexp, yexp, lastyexp))
                         else:
-                            print('t = {} * f({}, {})'.format(lastyexp, (l*(j*m+k)%r)*q, N))
+                            print('t = {} * f({}, {})'.format(lastyexp, t, q))
                             print('{} = {} + t'.format(yexp, yexp))
 
-        # print(m, q, r)
-        n = q
     for i in range(N):
         print("y[{}] = y_{}_{}".format(i, step, i))
 
