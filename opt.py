@@ -82,7 +82,7 @@ def main():
     #     print("x_{} = y[{}]".format(i, i))
 
     n = prod_factor
-    for f in factors[:-1]:
+    for f in reversed(factors[:-1]):
         step += 1
         m = N // n
         q = n // f
