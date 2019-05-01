@@ -24,6 +24,12 @@ def prime_factorize(n):
         if not found:
             factors.append(n // prod_factor)
             break
+
+    p = 1
+    for f in factors:
+        p *= f
+    assert(p == n)
+
     return factors
 
 def main():
