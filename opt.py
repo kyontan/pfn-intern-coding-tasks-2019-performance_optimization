@@ -3,14 +3,6 @@
 import argparse
 from math import log2, ceil
 
-def f(m, n):
-    if m == 0:
-      return '(1)'
-    return 'f({}, {})'.format(m, n)
-
-def e(m):
-    return 'e_{}'.format(m)
-
 # return factors of n (including duplicates)
 def prime_factorize(n):
     factors = []
@@ -27,11 +19,6 @@ def prime_factorize(n):
             factors.append(n // prod_factor)
             break
 
-    p = 1
-    for f in factors:
-        p *= f
-    assert(p == n)
-
     return factors
 
 def prime_factorize_unique(n):
@@ -47,6 +34,23 @@ def prime_primitive_root(p):
         else:
             return i
     raise "failed to find prime primitive root"
+
+def get_permutation_of_cooley_tukey(N, factors):
+    swap_xi_from = [x for x in range(N)]
+    prod_factor = 1
+    for f in factors[:-1]:
+        swap_xi_temp = [None] * N
+        m = N // prod_factor
+        q = m // f
+        for i in range(prod_factor):
+            for j in range(f):
+                for k in range(q):
+                    swap_xi_temp[i*m + q*j + k] = swap_xi_from[i*m + f*k + j]
+
+        swap_xi_from = swap_xi_temp
+
+        prod_factor *= f
+    return swap_xi_from
 
 # emit optimized version of `{yexp} = {xexp} * f(m, n)`
 def emit_y_add_x_prod_f(yexp, xexp, m, n, temp='t'):
@@ -204,30 +208,14 @@ def main():
 
     factors = prime_factorize(N)
 
-    swap_xi_from = [x for x in range(N)]
+    step = 0
 
     # Cooley-Tukey's algorithm (1): reorder input array by factors
-    prod_factor = 1
-    for f in factors[:-1]:
-        swap_xi_temp = [None] * N
-        m = N // prod_factor
-        q = m // f
-        for i in range(prod_factor):
-            for j in range(f):
-                for k in range(q):
-                    swap_xi_temp[i*m + q*j + k] = swap_xi_from[i*m + f*k + j]
-
-        swap_xi_from = swap_xi_temp
-
-        prod_factor *= f
-
-    step = 0
+    swap_xi_from = get_permutation_of_cooley_tukey(N, factors)
 
     for i in range(N):
         print('y_{}_{} = x[{}]'.format(step, i, swap_xi_from[i]))
     step += 1
-
-    n = N // factors[-1]
 
     src = 'y_{}'.format(step-1)
     dst = 'y_{}'.format(step)
