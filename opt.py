@@ -87,6 +87,52 @@ def idft(src, dst, size, n=1):
         for j in range(m):
             print("{}_{} = {}_{} * ({})".format(dst, i*m + j, dst, i*m + j, 1.0/m))
 
+def fft(src, dst, size, sign=1):
+    # print("fft({}, {}, size={}, sign={})".format(src, dst, size, sign))
+    n = 1
+    step = 0
+    temp = "fft_temp"
+    for i in range(size):
+        print("{}_{}_{} = {}_{}".format(temp, step, i, src, i))
+    step += 1
+
+    while n < size:
+        m = size // n
+        q = m >> 1
+        for i in range(n):
+            for k in range(q):
+                print("{}_{}_{} = {}_{}_{}".format(temp, step, i*m + k,     temp, step - 1, i*m + 2*k))
+                print("{}_{}_{} = {}_{}_{}".format(temp, step, i*m + q + k, temp, step - 1, i*m + 2*k + 1))
+        n <<= 1
+        step += 1
+
+    while 1 < n:
+        m = size // n
+        q = n >> 1
+        r = size // q
+
+        for i in range(q):
+            for k in range(m):
+                texp = "{}_{}_{}".format(temp, step, 2*m*i + k)
+                texp2 = "{}_{}_{}".format(temp, step, 2*m*i + m + k)
+                lasttexp = "{}_{}_{}".format(temp, step - 1, 2*m*i + k)
+                lasttexp2 = "{}_{}_{}".format(temp, step - 1, 2*m*i + m + k)
+                print("{} = {} * f({}, {})".format(texp, lasttexp2, sign * (k % r) * q, size))
+                print("{} = {} + {}".format(texp, texp, lasttexp))
+                print("{} = {} * f({}, {})".format(texp2, lasttexp2, sign * ((m + k) % r) * q, size))
+                print("{} = {} + {}".format(texp2, texp2, lasttexp))
+        step += 1
+        n >>= 1
+
+    for i in range(size):
+        print("{}_{} = {}_{}_{}".format(dst, i, temp, step - 1, i))
+
+def ifft(src, dst, size):
+    fft(src, dst, size, sign=-1)
+    for i in range(size):
+        print("{}_{} = {}_{} * ({})".format(dst, i, dst, i, 1.0/size))
+
+
 # Rader's algorithm
 def dft_prime_opt(src, dst, size, n=1):
     p = size // n
