@@ -223,7 +223,7 @@ def main():
     src = 'y_{}'.format(step-1)
     dst = 'y_{}'.format(step)
     n = N // factors[-1]
-    if 57 < factors[-1]:
+    if 59 <= factors[-1]:
         dft_prime_opt(src, dst, N, n)
     else:
         # non-optimized dft is faster
