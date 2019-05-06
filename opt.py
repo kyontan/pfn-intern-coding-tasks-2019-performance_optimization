@@ -10,6 +10,7 @@ def f(m, n):
 def e(m):
     return 'e_{}'.format(m)
 
+# return factors of n (including duplicates)
 def prime_factorize(n):
     factors = []
     prod_factor = 1
@@ -32,6 +33,22 @@ def prime_factorize(n):
 
     return factors
 
+# emit optimized version of `{yexp} = {xexp} * f(m, n)`
+def emit_y_add_x_prod_f(yexp, xexp, m, n, temp='t'):
+    if m % n == 0: # f(m, n) = 1
+        print('{} = {} + {}'.format(yexp, yexp, xexp))
+    elif (m % n) % n == n/2: # f(m, n) = -1
+        print('{} = {} - {}'.format(yexp, yexp, xexp))
+    elif (m % n) % n == n/4: # f(m, n) = i
+        print('{} = {} * (j)'.format(temp, xexp))
+        print('{} = {} + {}'.format(yexp, yexp, temp))
+    elif (m % n) % n == n*3/4: # f(m, n) = -i
+        print('{} = {} * (-j)'.format(temp, xexp))
+        print('{} = {} + {}'.format(yexp, yexp, temp))
+    else:
+        print('{} = {} * f({}, {})'.format(temp, xexp, m, n))
+        print('{} = {} + {}'.format(yexp, yexp, temp))
+
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument(dest='dim', type=int)
@@ -47,6 +64,7 @@ def main():
 
     swap_xi_from = [x for x in range(N)]
 
+    # Cooley-Tukey's algorithm (1): reorder input array by factors
     prod_factor = 1
     for f in factors[:-1]:
         swap_xi_temp = [None] * N
@@ -61,29 +79,28 @@ def main():
 
         prod_factor *= f
 
+    for i in range(N):
+        print('y[{}] = x[{}]'.format(i, swap_xi_from[i]))
+
     step = 0
 
     n = N // factors[-1]
     m = N // n
     for i in range(n):
-        # DFT n sub-arrays
+        # DFT n sub-arrays: [0..m-1], [m..2m-1], ..., [m(n-1)..mn-1]
         for j in range(m):
             yexp = 'y_{}_{}'.format(step, i*m+j)
             for k in range(m):
-                xexp = 'x[{}]'.format(swap_xi_from[i*m+k])
+                xexp = 'y[{}]'.format(i*m+k) # use y[] as input
 
                 t = j * k
 
                 if k == 0:
                     print('{} = {}'.format(yexp, xexp))
-                elif t % m == 0: # e^(2*t*i*pi) where t = 0, 1. ...
-                    print('{} = {} + {}'.format(yexp, yexp, xexp))
-                elif (2 * t) % m == 0: # e^(2*t*i*pi) where t = 0.5, 1.5. ...
-                    print('{} = {} - {}'.format(yexp, yexp, xexp))
                 else:
-                    print('t = {} * f({}, {})'.format(xexp, t, m))
-                    print('{} = {} + t'.format(yexp, yexp))
+                    emit_y_add_x_prod_f(yexp, xexp, t, m)
 
+    # Cooley-Tukey's algorithm (2)
     n = N // factors[-1]
     for f in reversed(factors[:-1]):
         step += 1
@@ -102,13 +119,8 @@ def main():
 
                         if l == 0:
                             print('{} = {}'.format(yexp, lastyexp))
-                        elif t % q == 0: # e^(2*t*i*pi) where t = 0, 1. ...
-                            print('{} = {} + {}'.format(yexp, yexp, lastyexp))
-                        elif (2 * t) % q == 0: # e^(2*t*i*pi) where t = 0.5, 1.5, ...
-                            print('{} = {} - {}'.format(yexp, yexp, lastyexp))
                         else:
-                            print('t = {} * f({}, {})'.format(lastyexp, t, q))
-                            print('{} = {} + t'.format(yexp, yexp))
+                            emit_y_add_x_prod_f(yexp, lastyexp, t, q)
 
     for i in range(N):
         print("y[{}] = y_{}_{}".format(i, step, i))
