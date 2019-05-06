@@ -5,6 +5,9 @@ from math import log2, ceil
 
 # return factors of n (including duplicates)
 def prime_factorize(n):
+    if n == 1:
+        return [1]
+
     factors = []
     prod_factor = 1
     while prod_factor != n:
@@ -27,7 +30,7 @@ def prime_factorize_unique(n):
 def prime_primitive_root(p):
     if p == 2:
         return 2
-    for i in range(2, p-1):
+    for i in range(2, p):
         for j in prime_factorize_unique(p-1):
             if pow(i, (p-1)//j, p) == 1:
                 break
