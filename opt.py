@@ -145,38 +145,42 @@ def dft_prime_opt(src, dst, size, n=1):
         l = pow(2, ceil(log2(p-1)) + 1)
     padlen = l - (p - 1)
 
-    fsrc = 'temp_{}_f'.format(dst)
-    fdst = 'temp_{}_fft_f'.format(dst)
+    temp = "dft_prime_opt_temp"
+    fsrc = '{}_f'.format(temp)
+    fdst = '{}_fft_f'.format(temp)
     for i in range(l):
         print("{}_{} = f({}, {})".format(fsrc, i, pow(ig, i%(p-1), p), p))
         # print("{}_{} = f({}, {})".format(fsrc, i, pow(ig, i, p), p))
-    dft(fsrc, fdst, size=l)
+    fft(fsrc, fdst, size=l)
 
     for i in range(n):
-        temp1 = "temp1_{}".format(dst)
+        step = 1
         for j in range(l):
-            temp1_j = "{}_{}".format(temp1, j)
+            texp = "{}_{}_{}".format(temp, step, j)
             if j == 0:
-                print("{} = {}_{}".format(temp1_j, src, i*p + 1))
+                print("{} = {}_{}".format(texp, src, i*p + 1))
             elif j <= padlen:
-                print("{} = (0)".format(temp1_j))
+                print("{} = (0)".format(texp))
             else:
-                print("{} = {}_{}".format(temp1_j, src, i*p + pow(g, (j-padlen) % (p-1),p)))
+                print("{} = {}_{}".format(texp, src, i*p + pow(g, (j-padlen) % (p-1),p)))
                 # print("{}_{} = {}_{}".format(temp1, j, src, i*p + pow(g, j-padlen, p)))
-
-        temp2 = "temp2_{}".format(dst)
-        dft(temp1, temp2, size=l)
+        step += 1
+        fft_src = '{}_{}'.format(temp, step - 1)
+        fft_dst = '{}_{}'.format(temp, step)
+        fft(fft_src, fft_dst, size=l)
 
         for j in range(l):
-            temp2_j = "{}_{}".format(temp2, j)
-            print("{} = {} * {}_{}".format(temp2_j, temp2_j, fdst, j))
+            texp = "{}_{}_{}".format(temp, step, j)
+            print("{} = {} * {}_{}".format(texp, texp, fdst, j))
 
-        temp3 = "temp3_{}".format(dst)
-        idft(temp2, temp3, size=l)
+        step += 1
+        ifft_src = fft_dst
+        ifft_dst = '{}_{}'.format(temp, step)
+        ifft(ifft_src, ifft_dst, size=l)
 
-        temp4 = "temp4_{}".format(dst)
+        step += 1
         for j in range(l):
-            print("{}_{} = {}_{} + {}_{}".format(temp4, j, temp3, j, src, i*p))
+            print("{}_{}_{} = {}_{}_{} + {}_{}".format(temp, step, j, temp, step-1, j, src, i*p))
 
         # DC (dst[i*p])
         print("{}_{} = {}_{}".format(dst, i*p, src, i*p))
@@ -185,7 +189,7 @@ def dft_prime_opt(src, dst, size, n=1):
 
         # not DC (dst[i*p + j])
         for j in range(p-1):
-            print("{}_{} = {}_{}".format(dst, i*p + pow(ig, j, p), temp4, j))
+            print("{}_{} = {}_{}_{}".format(dst, i*p + pow(ig, j, p), temp, step, j))
 
 def main():
     parser = argparse.ArgumentParser(description='')
