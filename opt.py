@@ -40,10 +40,10 @@ def emit_y_add_x_prod_f(yexp, xexp, m, n, temp='t'):
     elif (m % n) % n == n/2: # f(m, n) = -1
         print('{} = {} - {}'.format(yexp, yexp, xexp))
     elif (m % n) % n == n/4: # f(m, n) = i
-        print('{} = {} * (j)'.format(temp, xexp))
+        print('{} = {} * (-j)'.format(temp, xexp))
         print('{} = {} + {}'.format(yexp, yexp, temp))
     elif (m % n) % n == n*3/4: # f(m, n) = -i
-        print('{} = {} * (-j)'.format(temp, xexp))
+        print('{} = {} * (j)'.format(temp, xexp))
         print('{} = {} + {}'.format(yexp, yexp, temp))
     else:
         print('{} = {} * f({}, {})'.format(temp, xexp, m, n))
